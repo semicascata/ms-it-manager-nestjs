@@ -28,4 +28,22 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
+
+  // get user profile
+  async userProfile(user: User): Promise<User> {
+    const query = this.createQueryBuilder('user');
+
+    try {
+      const userPrfl = await query.where({ id: user.id }).getOne();
+      this.logger.verbose(`user profile: ${userPrfl.username}`);
+
+      delete userPrfl.password;
+      return userPrfl;
+    } catch (err) {
+      this.logger.error(`failed to get user profile - ${err.message}`);
+      throw new InternalServerErrorException(
+        `failed to get user profile - ${err.message}`,
+      );
+    }
+  }
 }
