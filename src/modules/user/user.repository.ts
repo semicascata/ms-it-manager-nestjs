@@ -21,6 +21,8 @@ export class UserRepository extends Repository<User> {
         ])
         .getRawMany();
 
+      this.logger.verbose('fetching users');
+
       return users;
     } catch (err) {
       this.logger.error(`failed to fetch users - ${err.message}`);

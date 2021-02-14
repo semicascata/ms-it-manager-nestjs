@@ -1,17 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
-import {
-  argonSalt,
-  jwtExpires,
-  jwtRefresh,
-  jwtRefreshExpires,
-} from '../../config/env.config';
+import { argonSalt, jwtExpires } from '../../config/env.config';
 import { User } from '../../modules/user/entity/user.entity';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
 import { IPayload } from 'src/modules/user/interface/payload.interface';
 import { IToken } from 'src/modules/user/interface/token.interface';
+import { jwtSecret } from '../../config/env.config';
 
 @Injectable()
 export class AuthProvider {
@@ -52,13 +48,12 @@ export class AuthProvider {
       expiresIn: jwtExpires,
     });
 
-    // const refreshToken = jwt.sign(payload, jwtRefresh, {
-    //   expiresIn: jwtRefreshExpires,
-    // });
+    return { token };
+  }
 
-    return {
-      token,
-      // refreshToken,
-    };
+  // decode jwt token
+  async decodeJwtToken(token: string): Promise<IPayload> {
+    const decoded = jwt.verify(token, jwtSecret);
+    return Object(decoded);
   }
 }

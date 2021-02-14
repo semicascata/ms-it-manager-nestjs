@@ -4,21 +4,21 @@ import {
   ExecutionContext,
   Logger,
   UnauthorizedException,
-  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
 import { Role } from 'src/modules/user/dto/user.dto';
-import * as jwt from 'jsonwebtoken';
-import { jwtSecret } from '../../config/env.config';
 import { UserService } from '../../modules/user/user.service';
-import { IPayload } from 'src/modules/user/interface/payload.interface';
+import { AuthProvider } from '../providers/auth.provider';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
   private logger = new Logger('RoleGuard');
 
-  constructor(private reflector: Reflector, private userService: UserService) {}
+  constructor(
+    private reflector: Reflector,
+    private userService: UserService,
+    private authProvider: AuthProvider,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<string[]>('role', context.getHandler());
@@ -30,17 +30,23 @@ export class RoleGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const token = req.headers.authorization.split(' ')[1];
 
-    const decoded = jwt.verify(token, jwtSecret);
-    const user = await this.userService.jwtValidation(Object(decoded));
+    try {
+      // decode token
+      const decoded = await this.authProvider.decodeJwtToken(token);
 
-    const matchUserRole = this.matchRole(roles, user.role);
+      // get user
+      const user = await this.userService.jwtValidation(Object(decoded));
 
-    if (matchUserRole) {
-      this.logger.verbose('user role authorized');
-      return matchUserRole;
-    } else {
-      this.logger.error('user role not authorized');
-      throw new UnauthorizedException('User role not authorized');
+      const matchUserRole = this.matchRole(roles, user.role);
+
+      if (matchUserRole) {
+        return matchUserRole;
+      } else {
+        throw new Error('User role not authorized');
+      }
+    } catch (err) {
+      this.logger.error(`${err.message}`);
+      throw new UnauthorizedException(err.message);
     }
   }
 

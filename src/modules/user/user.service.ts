@@ -12,6 +12,7 @@ import { CredentialsDto } from './dto/credentials.dto';
 import { AuthProvider } from '../../common/providers/auth.provider';
 import { IToken } from './interface/token.interface';
 import { IPayload } from './interface/payload.interface';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -77,20 +78,22 @@ export class UserService {
       username: credentialsDto.username,
     });
 
-    // validate password
-    const isMatch = await this.authProvider.hashAndMatch(
-      user.password,
-      credentialsDto.password,
-    );
+    try {
+      // validate password
+      const isMatch = await this.authProvider.hashAndMatch(
+        user.password,
+        credentialsDto.password,
+      );
 
-    if (user && isMatch) {
-      const token: IToken = await this.authProvider.generateTokens(user);
+      if (user && isMatch) {
+        const token: IToken = await this.authProvider.generateTokens(user);
 
-      return token;
+        return token;
+      }
+    } catch (err) {
+      this.logger.error(`authentication failed - ${err.message}`);
+      throw new UnauthorizedException(`Authentication failed - ${err.message}`);
     }
-
-    this.logger.error(`authentication failed`);
-    throw new UnauthorizedException('Authentication failed');
   }
 
   // jwt validation
@@ -99,9 +102,25 @@ export class UserService {
   }
 
   // update user
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    try {
+      await this.userRepository.update(id, updateUserDto);
+      const userUpdated = await this.userRepository.findOne(id);
+
+      this.logger.verbose(`user "${userUpdated.username}" updated!`);
+      delete userUpdated.password;
+
+      return userUpdated;
+    } catch (err) {
+      this.logger.error(`failed to update user - ${err.messsage}`);
+      throw new InternalServerErrorException(
+        `failed to update user - ${err.messsage}`,
+      );
+    }
+  }
 
   // delete user
-  async deleteUser(user: User, id: number): Promise<any> {
+  async deleteUser(id: number): Promise<any> {
     try {
       const user = await this.userRepository.findOne(id);
       await this.userRepository.remove(user);
