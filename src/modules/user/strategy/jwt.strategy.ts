@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     if (!user) {
       this.logger.error('invalid credentials');
-      return done(new UnauthorizedException('invalid credentials'), false);
+      return done(new UnauthorizedException('Invalid credentials'), false);
     }
 
     done(null, user);

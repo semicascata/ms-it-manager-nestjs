@@ -13,6 +13,7 @@ export class UserRepository extends Repository<User> {
     try {
       const users = await query
         .select([
+          'user.id',
           'user.username',
           'user.role',
           'user.occupation',

@@ -97,4 +97,26 @@ export class UserService {
   async jwtValidation(payload: IPayload): Promise<User> {
     return await this.userRepository.findOne(payload.id);
   }
+
+  // update user
+
+  // delete user
+  async deleteUser(user: User, id: number): Promise<any> {
+    try {
+      const user = await this.userRepository.findOne(id);
+      await this.userRepository.remove(user);
+
+      this.logger.verbose(`user "${user.username}" deleted`);
+
+      delete user.password;
+      return {
+        userDeleted: user,
+      };
+    } catch (err) {
+      this.logger.error(`failed to delete user - ${err.message}`);
+      throw new InternalServerErrorException(
+        `Failed to delete user - ${err.message}`,
+      );
+    }
+  }
 }
