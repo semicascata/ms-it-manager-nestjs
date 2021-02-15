@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtSecret, jwtExpires } from '../../config/env.config';
 import { LocalStrategy } from './strategy/local.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       signOptions: { expiresIn: jwtExpires },
     }),
   ],
-  controllers: [UserController],
+  controllers: [UserController, AuthController],
   providers: [UserService, AuthProvider, LocalStrategy, JwtStrategy],
   exports: [UserService, LocalStrategy, JwtStrategy],
 })

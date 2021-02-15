@@ -3,50 +3,37 @@ import {
   CanActivate,
   ExecutionContext,
   Logger,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from 'src/modules/user/dto/user.dto';
-import { UserService } from '../../modules/user/user.service';
-import { AuthProvider } from '../providers/auth.provider';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
   private logger = new Logger('RoleGuard');
 
-  constructor(
-    private reflector: Reflector,
-    private userService: UserService,
-    private authProvider: AuthProvider,
-  ) {}
+  constructor(private reflector: Reflector) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const roles = this.reflector.get<string[]>('role', context.getHandler());
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const roles = this.reflector.get<string[]>('roles', ctx.getHandler());
 
     if (!roles || roles.length === 0) {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest();
-    const token = req.headers.authorization.split(' ')[1];
+    const req = ctx.switchToHttp().getRequest();
+    const user = req.user;
 
     try {
-      // decode token
-      const decoded = await this.authProvider.decodeJwtToken(token);
-
-      // get user
-      const user = await this.userService.jwtValidation(Object(decoded));
-
       const matchUserRole = this.matchRole(roles, user.role);
 
       if (matchUserRole) {
-        return matchUserRole;
-      } else {
-        throw new Error('User role not authorized');
+        console.log(matchUserRole);
+        return true;
       }
     } catch (err) {
-      this.logger.error(`${err.message}`);
-      throw new UnauthorizedException(err.message);
+      console.log(err.message);
+
+      return false;
     }
   }
 
