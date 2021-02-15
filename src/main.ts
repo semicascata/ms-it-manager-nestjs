@@ -37,7 +37,7 @@ async function bootstrap() {
 
     await app.listen(port);
 
-    logger.log(`>_ server running on: http://localhost:${port}/api/v1/msim`);
+    logger.log(`>_ server running on: ${await app.getUrl()}/api/v1/msim`);
   } catch (err) {
     this.logger.error(`error starting server: ${err.message}`);
     throw new InternalServerErrorException(

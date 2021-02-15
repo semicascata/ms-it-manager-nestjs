@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Sector } from '../dto/inventory.dto';
+import { Client } from '../../client/entity/client.entity';
 
 @Entity()
 export class Inventory {
@@ -15,6 +16,11 @@ export class Inventory {
   })
   sector: Sector;
 
-  // clientInvId: Client;
+  @ManyToOne(
+    () => Client,
+    client => client.invCliId,
+  )
+  clientInvId: Client;
+
   // orderInvId: Order;
 }

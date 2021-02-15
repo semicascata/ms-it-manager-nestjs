@@ -40,7 +40,7 @@ export class User {
   })
   occupation: Occupation;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
   // orders: Order;
