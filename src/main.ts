@@ -1,4 +1,8 @@
-import { InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  Logger,
+  ValidationPipe,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
@@ -32,6 +36,13 @@ async function bootstrap() {
         windowMs: 10 * 60 * 1000,
         max: 100,
         message: 'too many requests!',
+      }),
+    );
+
+    // global data validation
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
       }),
     );
 

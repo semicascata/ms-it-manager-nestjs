@@ -4,7 +4,7 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
-  Length,
+  MaxLength,
 } from 'class-validator';
 
 export class ClientDto {
@@ -22,7 +22,7 @@ export class ClientDto {
 
   @IsNotEmpty()
   @IsString()
-  @Length(2)
+  @MaxLength(2)
   state: string;
 
   @IsOptional()
